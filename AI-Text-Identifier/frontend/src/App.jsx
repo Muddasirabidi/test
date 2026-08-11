@@ -3,18 +3,39 @@ import "./App.css";
 
 function App() {
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
 
     if (file) {
-      const imageURL = URL.createObjectURL(file);
-      setImage(imageURL);
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  const handleAnalyze = () => {
-    console.log("Analyze button clicked");
+  const handleAnalyze = async () => {
+    if (!image) {
+      console.log("No image selected");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      formData.append("image", image);
+
+      const response = await fetch("http://localhost:5000/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      console.log("Backend response:", data);
+    } catch (error) {
+      console.error("Error connecting to backend:", error);
+    }
   };
 
   return (
@@ -29,9 +50,9 @@ function App() {
 
         <label htmlFor="imageUpload" className="upload-box">
 
-          {image ? (
+          {imagePreview ? (
             <img
-              src={image}
+              src={imagePreview}
               alt="Selected"
               className="preview-image"
             />
